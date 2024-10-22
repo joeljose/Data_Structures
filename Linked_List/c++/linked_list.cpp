@@ -1,192 +1,131 @@
-#include <iostream>
-#include <memory>
-#include <vector>
+#include "linked_list.hpp"
 
-struct Node {
-    int data;
-    std::unique_ptr<Node> next;
-
-    Node(int val) : data(val), next(nullptr) {}
-};
-
-class LinkedList {
-private:
-    std::unique_ptr<Node> head;
-
-public:
-    LinkedList() : head(nullptr) {}
-
-    // Append a node to the end of the list
-    void append(int data) {
-        std::unique_ptr<Node> new_node = std::make_unique<Node>(data);
-        if (!head) {
-            head = std::move(new_node);
-            return;
-        }
-        Node* last = head.get();
-        while (last->next) {
-            last = last->next.get();
-        }
-        last->next = std::move(new_node);
-    }
-
-    // Prepend a node to the beginning of the list
-    void prepend(int data) {
-        std::unique_ptr<Node> new_node = std::make_unique<Node>(data);
-        new_node->next = std::move(head);
+void LinkedList::append(int data) {
+    auto new_node = std::make_unique<Node>(data);
+    if (!head) {
         head = std::move(new_node);
+        tail = head.get();
+    } else {
+        tail->next = std::move(new_node);
+        tail = tail->next.get();
     }
+}
 
-    // Insert a node after a specific node
-    void insert_after(Node* prev_node, int data) {
-        if (prev_node == nullptr) {
-            std::cerr << "The given previous node cannot be nullptr" << std::endl;
-            return;
-        }
-        std::unique_ptr<Node> new_node = std::make_unique<Node>(data);
-        new_node->next = std::move(prev_node->next);
-        prev_node->next = std::move(new_node);
+void LinkedList::prepend(int data) {
+    auto new_node = std::make_unique<Node>(data);
+    new_node->next = std::move(head);
+    head = std::move(new_node);
+    if (!tail) {
+        tail = head.get();
     }
+}
 
-    // Delete a node by value
-    void delete_value(int data) {
-        if (!head) return;
-
-        if (head->data == data) {
-            head = std::move(head->next);
-            return;
-        }
-
-        Node* current = head.get();
-        Node* previous = nullptr;
-
-        while (current && current->data != data) {
-            previous = current;
-            current = current->next.get();
-        }
-
-        if (!current) return; // Node with the data not found
-
-        previous->next = std::move(current->next);
+void LinkedList::insert_after(const Node* prev_node, int data) {
+    if (prev_node == nullptr) {
+        throw std::invalid_argument("The given previous node cannot be nullptr");
     }
-
-    // Delete a node by position (0-indexed)
-    void delete_at_position(int position) {
-        if (!head) return;
-
-        if (position == 0) {
-            head = std::move(head->next);
-            return;
-        }
-
-        Node* current = head.get();
-        Node* previous = nullptr;
-
-        int count = 0;
-        while (current && count != position) {
-            previous = current;
-            current = current->next.get();
-            count++;
-        }
-
-        if (!current) return; // Position out of range
-
-        previous->next = std::move(current->next);
+    Node* current = head.get();
+    while (current && current != prev_node) {
+        current = current->next.get();
     }
+    if (!current) {
+        throw std::invalid_argument("The given previous node is not in the list");
+    }
+    auto new_node = std::make_unique<Node>(data);
+    new_node->next = std::move(current->next);
+    current->next = std::move(new_node);
+    if (current == tail) {
+        tail = current->next.get();
+    }
+}
 
-    // Find a node by value
-    Node* find(int data) {
-        Node* current = head.get();
-        while (current) {
-            if (current->data == data) {
-                return current;
+Node* LinkedList::find(int data) const {
+    Node* current = head.get();
+    while (current) {
+        if (current->data == data) {
+            return current;
+        }
+        current = current->next.get();
+    }
+    return nullptr;
+}
+
+bool LinkedList::contains(int data) const {
+    return find(data) != nullptr;
+}
+
+int LinkedList::length() const {
+    int count = 0;
+    Node* current = head.get();
+    while (current) {
+        count++;
+        current = current->next.get();
+    }
+    return count;
+}
+
+void LinkedList::reverse() {
+    Node* prev = nullptr;
+    Node* current = head.get();
+    tail = current;
+    while (current != nullptr) {
+        std::unique_ptr<Node> next = std::move(current->next);
+        current->next = std::unique_ptr<Node>(prev);
+        prev = current;
+        current = next.get();
+    }
+    head = std::unique_ptr<Node>(prev);
+}
+
+void LinkedList::delete_value(int value) {
+    Node* current = head.get();
+    Node* prev = nullptr;
+
+    while (current != nullptr) {
+        if (current->data == value) {
+            if (prev == nullptr) {
+                head = std::move(current->next);
+                if (!head) {
+                    tail = nullptr;
+                }
+            } else {
+                prev->next = std::move(current->next);
+                if (prev->next == nullptr) {
+                    tail = prev;
+                }
             }
-            current = current->next.get();
+            return;
         }
-        return nullptr;
+        prev = current;
+        current = current->next.get();
     }
+}
 
-    // Check if the list contains a node with the given value
-    bool contains(int data) {
-        return find(data) != nullptr;
-    }
+void LinkedList::delete_at_position(int position) {
+    if (position < 0 || head == nullptr) return;
 
-    // Get the length of the list
-    int length() const {
-        int count = 0;
-        Node* current = head.get();
-        while (current) {
-            count++;
-            current = current->next.get();
+    if (position == 0) {
+        head = std::move(head->next);
+        if (!head) {
+            tail = nullptr;
         }
-        return count;
+        return;
     }
 
-    // Check if the list is empty
-    bool is_empty() const {
-        return head == nullptr;
+    Node* current = head.get();
+    Node* prev = nullptr;
+    int currentPosition = 0;
+
+    while (current != nullptr && currentPosition < position) {
+        prev = current;
+        current = current->next.get();
+        currentPosition++;
     }
 
-    // Print the list
-    void print_list() const {
-        Node* current = head.get();
-        while (current) {
-            std::cout << current->data << " -> ";
-            current = current->next.get();
+    if (current != nullptr) {
+        prev->next = std::move(current->next);
+        if (prev->next == nullptr) {
+            tail = prev;
         }
-        std::cout << "nullptr" << std::endl;
     }
-
-    // Reverse the list
-    void reverse() {
-        Node* prev = nullptr;
-        std::unique_ptr<Node> current = std::move(head);
-        while (current) {
-            std::unique_ptr<Node> next = std::move(current->next);
-            current->next.reset(prev);
-            prev = current.release();
-            current = std::move(next);
-        }
-        head.reset(prev);
-    }
-
-    // Convert the list to a vector (or similar container)
-    std::vector<int> to_vector() const {
-        std::vector<int> result;
-        Node* current = head.get();
-        while (current) {
-            result.push_back(current->data);
-            current = current->next.get();
-        }
-        return result;
-    }
-};
-
-int main() {
-    LinkedList list;
-
-    list.append(10);
-    list.append(20);
-    list.prepend(5);
-    list.insert_after(list.find(10), 15);
-
-    std::cout << "List: ";
-    list.print_list();  // Output: 5 -> 10 -> 15 -> 20 -> nullptr
-
-    list.delete_value(10);
-    std::cout << "After deleting 10: ";
-    list.print_list();  // Output: 5 -> 15 -> 20 -> nullptr
-
-    list.delete_at_position(1);
-    std::cout << "After deleting at position 1: ";
-    list.print_list();  // Output: 5 -> 20 -> nullptr
-
-    std::cout << "Contains 20: " << list.contains(20) << std::endl;  // Output: 1 (true)
-    std::cout << "List length: " << list.length() << std::endl;  // Output: 2
-
-    list.reverse();
-    std::cout << "Reversed list: ";
-    list.print_list();  // Output: 20 -> 5 -> nullptr
-
-    return 0;
 }
