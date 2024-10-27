@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vector>
 #include "linked_list.hpp"
 
 class LinkedListTest : public ::testing::Test {
@@ -51,20 +52,6 @@ TEST_F(LinkedListTest, DeleteAtPosition) {
     EXPECT_FALSE(list.contains(20));
 }
 
-TEST_F(LinkedListTest, Reverse) {
-    list.append(10);
-    list.append(20);
-    list.append(30);
-    list.reverse();
-    
-    // You might need to implement a way to check the order of elements
-    // For now, we'll just check if all elements are still present
-    EXPECT_EQ(list.length(), 3);
-    EXPECT_TRUE(list.contains(10));
-    EXPECT_TRUE(list.contains(20));
-    EXPECT_TRUE(list.contains(30));
-}
-
 TEST_F(LinkedListTest, EmptyList) {
     EXPECT_EQ(list.length(), 0);
     EXPECT_FALSE(list.contains(5));
@@ -78,4 +65,15 @@ TEST_F(LinkedListTest, SingleElementList) {
     list.reverse();
     EXPECT_EQ(list.length(), 1);
     EXPECT_TRUE(list.contains(42));
+}
+
+TEST_F(LinkedListTest, Reverse) {
+    list.append(10);
+    list.append(20);
+    list.append(30);
+    list.reverse();
+    
+    std::vector<int> expected = {30, 20, 10};
+    EXPECT_EQ(list.to_vector(), expected);
+    EXPECT_EQ(list.length(), 3);
 }

@@ -65,17 +65,23 @@ int LinkedList::length() const {
 }
 
 void LinkedList::reverse() {
+    if (!head || !head->next) return;  // Handle empty or single-element list
+
     Node* prev = nullptr;
-    Node* current = head.get();
-    tail = current;
-    while (current != nullptr) {
-        std::unique_ptr<Node> next = std::move(current->next);
-        current->next = std::unique_ptr<Node>(prev);
+    Node* current = head.release();  // Release ownership temporarily to work with raw pointers
+    tail = current;  // The current head becomes the new tail
+
+    while (current) {
+        Node* next = current->next.release();  // Extract raw pointer from unique_ptr
+        current->next.reset(prev);  // Set next to previous
         prev = current;
-        current = next.get();
+        current = next;
     }
-    head = std::unique_ptr<Node>(prev);
+
+    head.reset(prev);  // Restore ownership of the new head
+    tail->next.reset();  // Ensure the new tail points to nullptr
 }
+
 
 void LinkedList::delete_value(int value) {
     Node* current = head.get();

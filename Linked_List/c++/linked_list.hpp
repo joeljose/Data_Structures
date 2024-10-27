@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <iostream>
+#include <vector>
 
 struct Node {
     int data;
@@ -47,6 +48,15 @@ public:
 
     // Add this method declaration
     void delete_at_position(int position);
+
+    // Add this method to the LinkedList class
+    std::vector<int> to_vector() const {
+        std::vector<int> result;
+        traverse([&result](const Node* node) {
+            result.push_back(node->data);
+        });
+        return result;
+    }
 };
 
 #endif // LINKED_LIST_HPP
