@@ -6,7 +6,7 @@ This project implements a LinkedList data structure in C++ with comprehensive un
 
 - `linked_list.hpp`: Header file for the LinkedList class
 - `linked_list.cpp`: Implementation of the LinkedList class
-- `test.cpp`: Unit tests for the LinkedList class
+- `linked_list_test.cpp`: Unit tests for the LinkedList class
 - `CMakeLists.txt`: CMake configuration file
 - `build.sh`: Script to build the project
 - `run.sh`: Script to run the tests
@@ -59,7 +59,7 @@ The LinkedList class provides the following operations:
 
 ## Test Cases
 
-The `test.cpp` file contains the following test cases:
+The `linked_list_test.cpp` file contains the following test cases:
 
 1. `AppendAndPrepend`: Tests adding elements to the beginning and end of the list
 2. `InsertAfter`: Tests inserting an element after a specific node
@@ -76,6 +76,6 @@ Each test case verifies the correct behavior of the LinkedList operations, inclu
 To add new features or test cases:
 
 1. Implement new methods in `linked_list.cpp` and update `linked_list.hpp` accordingly.
-2. Add new test cases in `test.cpp`.
+2. Add new test cases in `linked_list_test.cpp`.
 3. Rebuild the project using `./build.sh`.
 4. Run the updated tests using `./run.sh`.
